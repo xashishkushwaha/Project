@@ -1,60 +1,80 @@
 const mongoose = require("mongoose");
-const { string } = require("zod");
+const bcrypt = require("bcrypt");
+const { string, number } = require("zod");
 
+// Connect to MongoDB
 mongoose.connect(
-  "mongodb+srv://ashish47kushwaha:P8xlEbe3761ASsJf@cluster.6gb1u.mongodb.net/"
+  "mongodb+srv://xashishkushwaha:xashish@cluster0.hp7a3.mongodb.net/CleanSweep",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
 );
 
+// Define User Schema with validations
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    lowercase: true,
-    minLength: 1,
-    maxLength: 50,
-  },
-  password: {
-    type: String,
-    required: true,
-    minLength: 6,
   },
   firstName: {
     type: String,
     required: true,
-    trim: true,
-    maxLength: 50,
   },
   lastName: {
     type: String,
     required: true,
-    trim: true,
-    maxLength: 50,
   },
   email: {
     type: String,
-    unique: true
-},
+    required: true,
+    unique: true,
+    match: [/.+@.+\..+/, "Please enter a valid email address"],
+  },
+  password: {
+    type: String,
+    required: true,
+    // Never store passwords in plain text in production!
+  },
 });
 
-const accountSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId, // Reference to User model
-        ref: 'User',
-        required: true
-    },
-    balance: {
-        type: Number,
-        required: true
+// Pre-save hook to hash passwords before saving to the database
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password") || this.isNew) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
     }
+  }
+  next();
 });
 
+// Define Location Schema with a default count value
+const locationSchema = new mongoose.Schema({
+  locationName: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  count: {
+    type: Number,
+    default: 0,
+  },
+});
+
+// Create Mongoose models for User and Location
 const User = mongoose.model("User", userSchema);
-const Account = mongoose.model("Account",accountSchema);
+const Location = mongoose.model("Location", locationSchema);
 
-module.exports = {
-    User,
-    Account
-}
-
+module.exports = { User, Location };

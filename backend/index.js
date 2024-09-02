@@ -1,5 +1,5 @@
 const express = require("express");
-const mainRouter = require("/Users/ashish/Desktop/ALL IN/Coding/Full Stack/Week 8/Project Paytm/paytm/backend/routes/index.js");
+const mainRouter = require("./routes/index.js");
 const PORT = 3000;
 const cors= require("cors");
 
