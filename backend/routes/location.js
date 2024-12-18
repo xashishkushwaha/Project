@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     const { locationName, address, description } = parsedResult.data;
 
     try {
-        const existingLocation = await Location.findOne({ locationName });
+        const existingLocation = await Location.findOne({   locationName: locationName });
 
         if (existingLocation) {
             return res.status(409).json({
